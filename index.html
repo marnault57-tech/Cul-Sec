@@ -1,0 +1,52 @@
+# Publier Cul Sec sur le Google Play Store
+
+Ce dossier contient une PWA (Progressive Web App) complète et installable :
+`index.html`, `manifest.json`, `sw.js` et le dossier `icons/` générés à partir de ton visuel.
+
+## Étape 1 — Héberger les fichiers en HTTPS
+
+Il faut une URL publique en HTTPS pour la suite. Le plus simple et gratuit :
+
+- **GitHub Pages** : crée un dépôt, dépose tout le contenu de ce dossier à la racine, active
+  Pages dans les réglages du dépôt. Tu obtiens une URL du type
+  `https://tonpseudo.github.io/cul-sec/`
+- **Netlify / Vercel** : glisse-dépose le dossier sur netlify.com (aucune configuration requise).
+
+Vérifie que `index.html` est bien à la racine du site (ou adapte les chemins dans `manifest.json`
+et `index.html` si tu le mets dans un sous-dossier).
+
+## Étape 2 — Générer le package Android (.aab)
+
+Une fois l'URL en ligne :
+
+1. Va sur **[pwabuilder.com](https://www.pwabuilder.com)**
+2. Colle ton URL, laisse l'outil analyser le site (il doit détecter le manifest automatiquement)
+3. Choisis **Android** → **Google Play (TWA)**
+4. Télécharge le package généré (fichier `.aab`)
+
+Alternative en ligne de commande : l'outil **Bubblewrap** de Google fait la même chose si tu
+préfères ne pas passer par une interface web.
+
+## Étape 3 — Compte développeur Google Play
+
+- Rends-toi sur [play.google.com/console](https://play.google.com/console)
+- Frais uniques de 25 $, valables à vie
+- Vérification d'identité : quelques heures à 2 jours
+
+## Étape 4 — Créer la fiche et publier
+
+1. « Créer une application » dans la Play Console
+2. Renseigne nom (**Cul Sec**), description, catégorie (Divertissement), captures d'écran
+3. Ajoute une **politique de confidentialité** (obligatoire même sans collecte de données —
+   un simple texte disant que l'appli ne collecte aucune donnée personnelle suffit)
+4. Envoie le fichier `.aab` dans un test interne, teste sur ton téléphone
+5. Réponds au **questionnaire de classification de contenu** : déclare honnêtement les
+   thèmes liés à l'alcool. Google demandera probablement une classification 18+, ce qui est
+   normal et attendu pour ce type d'appli.
+6. Envoie en revue → publication (délai habituel : quelques heures à 2 jours)
+
+## Notes
+
+- L'appli est entièrement gratuite, aucun système de paiement à configurer.
+- Le fond `#120C1E` utilisé dans le manifest correspond à la couleur de fond de l'appli, pour
+  un écran de démarrage cohérent avec le reste de la DA.
