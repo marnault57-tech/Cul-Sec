@@ -31,7 +31,7 @@ html,body{ height:100%; background:var(--bg); color:var(--text); font-family:'Sp
 @keyframes float2{ 0%,100%{transform:translate(0,0);} 50%{transform:translate(-50px,-40px);} }
 @media (prefers-reduced-motion: reduce){ .blob, .card-inner, #liquid, * { animation:none !important; transition:none !important; } }
 
-.wrap{ position:relative; z-index:1; width:100%; max-width:480px; padding:26px 20px 40px; display:flex; flex-direction:column; align-items:center; min-height:100vh; min-height:100svh; }
+.wrap{ position:relative; z-index:1; width:100%; max-width:480px; padding:26px 20px calc(60px + env(safe-area-inset-bottom, 0px)); display:flex; flex-direction:column; align-items:center; min-height:100vh; min-height:100svh; }
 
 .brand{ text-align:center; margin-bottom:8px; display:flex; flex-direction:column; align-items:center; }
 .brand-glass{ margin-bottom:4px; filter:drop-shadow(0 6px 18px rgba(255,61,138,0.35)); }
@@ -382,7 +382,20 @@ const DECKS = {
     ["gorgee","Bois une gorgée si tu as déjà oublié l'anniversaire de quelqu'un.",""],
     ["gorgee","La personne qui a les chaussures les plus originales distribue une gorgée.",""],
     ["groupe","🎨 Dessinez à tour de rôle un élément d'un dessin commun, sans savoir ce que les autres ont dessiné.","le résultat le plus raté fait boire son auteur, 1 gorgée"],
-    ["groupe","🕵️ Devinez qui a écrit une réponse anonyme à une question posée par le lecteur.","mauvaise réponse : 1 gorgée"]
+    ["groupe","🕵️ Devinez qui a écrit une réponse anonyme à une question posée par le lecteur.","mauvaise réponse : 1 gorgée"],
+    ["verite","Qui dans le groupe survivrait le moins longtemps sur une île déserte ?","1 gorgée"],
+    ["verite","Qui serait le pire colocataire ?","1 gorgée"],
+    ["verite","Quel est ton plus gros défaut ?","1 gorgée"],
+    ["verite","Quelle est la chose la plus bizarre que tu fais quand personne ne te regarde ?","1 gorgée"],
+    ["verite","Qui ici te connaît le mieux ?","1 gorgée"],
+    ["verite","Quelle est ta plus grosse honte au collège ou au lycée ?","1 gorgée"],
+    ["verite","Si tu devais échanger ta vie avec quelqu'un ici pendant 24h, qui choisirais-tu ?","1 gorgée"],
+    ["verite","Quel est ton talent complètement inutile ?","1 gorgée"],
+    ["verite","Qui serait le plus susceptible de devenir célèbre ?","1 gorgée"],
+    ["verite","Quelle est la pire excuse que tu as déjà donnée pour annuler une soirée ?","1 gorgée"],
+    ["groupe","👀 Le regard : au signal, tout le monde regarde quelqu'un du groupe.","celui qui reçoit le plus de regards boit 1 gorgée"],
+    ["groupe","🕵️ Qui est-ce ? : un joueur pense à quelqu'un du groupe, les autres posent des questions oui/non.","si personne ne trouve en 10 questions, tout le monde boit 1 gorgée"],
+    ["groupe","🗳️ Vote express : « Qui est le plus susceptible de... ? » Tout le monde vote en même temps, du doigt.","la personne la plus désignée boit 1 gorgée"]
   ],
   culsec: [
     ["verite","Quelle est la chose la plus folle que tu aies faite pour impressionner quelqu'un ?","cul sec"],
@@ -434,7 +447,21 @@ const DECKS = {
     ["gorgee","La personne qui a le plus dansé ce soir fait cul sec.",""],
     ["gorgee","Bois une gorgée pour chaque cocktail que tu sais préparer.",""],
     ["groupe","🎡 Roue de la fortune imaginaire : chacun désigne au hasard qui boit avant lui.","la personne désignée boit 2 gorgées"],
-    ["groupe","🥊 Duel de bras de fer amical entre deux volontaires, le public parie.","le perdant fait cul sec"]
+    ["groupe","🥊 Duel de bras de fer amical entre deux volontaires, le public parie.","le perdant fait cul sec"],
+    ["gorgee","Le dernier à toucher son nez boit.",""],
+    ["gorgee","Le joueur avec le téléphone le plus chargé boit.",""],
+    ["gorgee","Tout le monde qui porte du noir boit.",""],
+    ["groupe","✂️ Choisis quelqu'un : duel de pierre-feuille-ciseaux.","le perdant boit"],
+    ["gorgee","Le dernier à lever son verre boit.",""],
+    ["gorgee","Le joueur qui a le plus de kilomètres jusqu'à chez lui boit.",""],
+    ["groupe","⏱️ Choisis deux joueurs : ils doivent boire en même temps, gorgée après gorgée.","le premier qui s'arrête boit une gorgée de plus"],
+    ["gorgee","Celui qui a envoyé le dernier message boit.",""],
+    ["groupe","👉 Tout le monde pointe la personne qui survivrait le moins longtemps sans alcool.","la personne avec le plus de votes boit 2 gorgées"],
+    ["groupe","👑 Règle du roi : choisis une règle valable jusqu'à la prochaine carte spéciale.",""],
+    ["groupe","🃏 Carte spéciale — Double peine : la prochaine personne qui boit, boit deux fois.",""],
+    ["groupe","🃏 Carte spéciale — Immunité : choisis quelqu'un qui ne pourra pas boire pendant 2 tours.",""],
+    ["groupe","🃏 Carte spéciale — Transfert : donne ta prochaine pénalité à quelqu'un d'autre.",""],
+    ["gorgee","🃏 Carte spéciale — Tous ensemble : tout le monde boit, en même temps.",""]
   ],
   equipe: [
     ["verite","Un membre de l'équipe doit deviner combien d'ex a un membre de l'équipe adverse.","2 gorgées pour l'équipe"],
@@ -486,7 +513,21 @@ const DECKS = {
     ["groupe","Duel de vitesse : qui empile le plus d'objets en 15 secondes ?","l'équipe perdante boit 2 gorgées"],
     ["groupe","Quiz rapide : drapeaux du monde, une question par équipe.","mauvaise réponse : 2 gorgées pour l'équipe"],
     ["groupe","Chaque équipe doit deviner un objet décrit sans le nommer par l'autre équipe.","l'équipe qui ne trouve pas boit 2 gorgées"],
-    ["groupe","Concours de la meilleure improvisation d'un slogan publicitaire, vote du public.","l'équipe perdante fait cul sec"]
+    ["groupe","Concours de la meilleure improvisation d'un slogan publicitaire, vote du public.","l'équipe perdante fait cul sec"],
+    ["groupe","🤐 Ni oui ni non : chaque équipe choisit un joueur, il doit tenir 30 secondes sans dire ni oui ni non.","s'il craque, 2 gorgées pour l'équipe"],
+    ["action","Mime express : 20 secondes pour faire deviner un mot à ton équipe.","2 gorgées pour l'équipe si personne ne trouve"],
+    ["action","Mot interdit : fais deviner un mot à ton équipe sans utiliser 3 mots imposés par l'équipe adverse.","2 gorgées pour l'équipe"],
+    ["groupe","🔤 Alphabet : sur une catégorie donnée, chacun doit trouver un mot avec la lettre imposée, sans hésiter.","le premier bloqué fait boire son équipe, 2 gorgées"],
+    ["groupe","📢 Téléphone cassé : une phrase est chuchotée de joueur en joueur jusqu'au bout de l'équipe.","si le message arrive déformé, l'équipe boit 2 gorgées"],
+    ["groupe","Duel de rapidité : citez 3 marques de voiture en 5 secondes, une équipe contre l'autre.","l'équipe la plus lente boit 2 gorgées"],
+    ["groupe","🎵 Blind test éclair : le premier qui reconnaît la chanson fait gagner son équipe.","l'équipe qui ne trouve pas boit 2 gorgées"],
+    ["verite","Qui connaît le mieux son équipe ? Chacun répond en secret à une question, puis comparez.","chaque réponse différente coûte 1 gorgée à l'équipe"],
+    ["verite","Quel membre de l'équipe serait le meilleur candidat à une émission de survie ?","2 gorgées pour l'équipe"],
+    ["verite","Qui de votre équipe arriverait le premier à se faire arrêter dans un film ?","2 gorgées pour l'équipe"],
+    ["verite","Qui dépense le plus d'argent dans votre équipe ?","2 gorgées pour l'équipe"],
+    ["verite","Qui ment le mieux dans votre équipe ?","2 gorgées pour l'équipe"],
+    ["verite","Qui serait le meilleur président dans votre équipe ?","2 gorgées pour l'équipe"],
+    ["verite","Qui de votre équipe survivrait le moins longtemps dans une apocalypse zombie ?","2 gorgées pour l'équipe"]
   ],
   sansfiltre: [
     ["verite","Quel est le secret que tu n'as jamais avoué à personne dans cette pièce ?","cul sec"],
@@ -538,7 +579,30 @@ const DECKS = {
     ["groupe","Chacun partage la dernière fois où il a menti pour protéger quelqu'un d'autre.","celui qui passe boit 2 gorgées"],
     ["groupe","Le groupe choisit qui, ce soir, semble avoir le plus de choses à dire mais ne les dit pas.","cette personne répond, ou fait cul sec"],
     ["groupe","Tour de gratitude : chacun dit sincèrement pourquoi il est content d'être ici ce soir.","celui qui bafouille boit 1 gorgée"],
-    ["groupe","Chacun doit avouer la dernière fois où il a eu honte de lui-même.","refus : cul sec"]
+    ["groupe","Chacun doit avouer la dernière fois où il a eu honte de lui-même.","refus : cul sec"],
+    ["verite","Qui dans cette pièce pourrais-tu embrasser ?","3 gorgées"],
+    ["verite","Qui est la personne la plus attirante ici, selon toi ?","3 gorgées"],
+    ["verite","As-tu déjà eu un crush sur quelqu'un présent ce soir ?","cul sec"],
+    ["verite","Quelle est la chose la plus gênante que tu aies faite pour plaire à quelqu'un ?","3 gorgées"],
+    ["verite","As-tu déjà envoyé un message que tu as immédiatement regretté ?","2 gorgées"],
+    ["verite","Quelle est la plus grosse excuse que tu as donnée à quelqu'un que tu fréquentais ?","3 gorgées"],
+    ["verite","Qui ici serait ton pire choix possible pour une relation ?","2 gorgées"],
+    ["verite","Quel est ton plus gros red flag ?","2 gorgées"],
+    ["verite","As-tu déjà stalké quelqu'un sur les réseaux sociaux ?","2 gorgées"],
+    ["verite","Quelle personne de ton passé pourrait facilement reprendre une place dans ta vie ?","cul sec"],
+    ["verite","Quelle est la chose la plus folle que tu aies faite par amour ?","2 gorgées"],
+    ["verite","Qui ici pourrait facilement te séduire ?","3 gorgées"],
+    ["verite","Quelle est la dernière personne à laquelle tu as pensé avant de t'endormir ?","2 gorgées"],
+    ["verite","As-tu déjà menti pour cacher quelque chose à ton ou ta partenaire ?","3 gorgées"],
+    ["verite","Quelle est la chose que tu n'oserais jamais raconter à tes parents ?","cul sec"],
+    ["action","Montre ta dernière recherche Google.","3 gorgées"],
+    ["action","Lis le dernier message que tu as reçu, sans montrer l'écran.","2 gorgées"],
+    ["action","Laisse quelqu'un choisir ta prochaine photo de profil.","2 gorgées"],
+    ["action","Appelle quelqu'un et dis-lui simplement « J'ai une question importante », puis raccroche.","3 gorgées"],
+    ["action","Montre la dernière photo prise sur ton téléphone.","2 gorgées"],
+    ["action","Envoie « Tu me manques » à la dernière personne avec qui tu as parlé par message.","3 gorgées"],
+    ["action","Laisse le groupe choisir une personne à qui tu dois envoyer un emoji 😏.","2 gorgées"],
+    ["action","Fais une déclaration d'amour dramatique à la personne à ta droite.","2 gorgées"]
   ]
 };
 
@@ -697,9 +761,9 @@ function shuffle(arr){
 
 // Durée calculée à partir du nombre de joueurs, avec une petite part d'aléatoire à chaque partie.
 function computeSessionLength(players){
-  const base = players * 2.5;
-  const jitter = Math.floor(Math.random() * 5) - 2; // -2 à +2
-  return Math.max(10, Math.min(36, Math.round(base + jitter)));
+  const base = 30 + players * 1.6;
+  const jitter = Math.floor(Math.random() * 7) - 2; // -2 à +4
+  return Math.max(28, Math.min(60, Math.round(base + jitter)));
 }
 
 function launchGame(){
