@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CUL SEC — le jeu à passer</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#120C1E">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg: #120C1E;
+  --card: #201735;
+  --violet: #9B6BFF;
+  --pink: #FF3D8A;
+  --amber: #FFB300;
+  --lime: #C6FF3D;
+  --emerald: #34D399;
+  --text: #F5F1FF;
+  --muted: #A99FC4;
+  --border: rgba(245,241,255,0.10);
+  --liquid: #FFD166;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{ height:100%; background:var(--bg); color:var(--text); font-family:'Space Grotesk', sans-serif; overflow-x:hidden; }
+
+.stage{ position:relative; min-height:100vh; min-height:100svh; display:flex; flex-direction:column; align-items:center; overflow-x:hidden; }
+.blob{ position:fixed; border-radius:50%; filter:blur(90px); opacity:0.32; z-index:0; pointer-events:none; }
+.blob1{ width:420px; height:420px; background:var(--violet); top:-120px; left:-100px; animation: float1 14s ease-in-out infinite; }
+.blob2{ width:380px; height:380px; background:var(--pink); bottom:-140px; right:-100px; animation: float2 16s ease-in-out infinite; }
+@keyframes float1{ 0%,100%{transform:translate(0,0);} 50%{transform:translate(40px,60px);} }
+@keyframes float2{ 0%,100%{transform:translate(0,0);} 50%{transform:translate(-50px,-40px);} }
+@media (prefers-reduced-motion: reduce){ .blob, .card-inner, #liquid, * { animation:none !important; transition:none !important; } }
+
+.wrap{ position:relative; z-index:1; width:100%; max-width:480px; padding:26px 20px calc(60px + env(safe-area-inset-bottom, 0px)); display:flex; flex-direction:column; align-items:center; min-height:100vh; min-height:100svh; }
+
+.brand{ text-align:center; margin-bottom:8px; display:flex; flex-direction:column; align-items:center; }
+.brand-glass{ margin-bottom:4px; filter:drop-shadow(0 6px 18px rgba(255,61,138,0.35)); }
+.brand h1{ font-family:'Unbounded', sans-serif; font-weight:900; font-size:36px; letter-spacing:1px; line-height:1;
+  background:linear-gradient(90deg, var(--pink), var(--violet) 60%, var(--amber));
+  -webkit-background-clip:text; background-clip:text; color:transparent; }
+.brand-underline{ width:64px; height:3px; border-radius:2px; margin:10px 0 2px;
+  background:linear-gradient(90deg, var(--pink), var(--violet) 60%, var(--amber)); }
+.brand p{ color:var(--muted); font-size:13px; margin-top:8px; }
+
+.screen{ width:100%; display:flex; flex-direction:column; align-items:center; flex:1; }
+.hidden{ display:none !important; }
+
+.section-label{ align-self:flex-start; font-size:12px; text-transform:uppercase; letter-spacing:2px; color:var(--muted); margin:22px 0 10px 4px; }
+
+.theme-grid{ width:100%; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.theme-tile{ position:relative; border:1px solid var(--border); border-radius:16px; padding:16px 14px; background:rgba(255,255,255,0.03);
+  cursor:pointer; min-height:104px; display:flex; flex-direction:column; justify-content:space-between;
+  transition:transform .15s ease, border-color .15s ease; overflow:hidden; }
+.theme-tile:active{ transform:scale(0.97); }
+.theme-tile .emoji{ font-size:22px; }
+.theme-tile .tname{ font-family:'Unbounded', sans-serif; font-weight:700; font-size:14px; margin-top:6px; }
+.theme-tile .ttag{ font-size:11px; color:var(--muted); margin-top:4px; line-height:1.3; }
+.theme-tile .lock{ position:absolute; top:10px; right:10px; font-size:14px; opacity:0.85; }
+.theme-tile.selected{ border-color:var(--tc, var(--violet)); box-shadow:0 0 0 1px var(--tc, var(--violet)) inset, 0 0 24px rgba(155,107,255,0.25); }
+.theme-tile.locked{ opacity:0.55; }
+
+.team-setup{ width:100%; margin-top:16px; display:flex; gap:10px; }
+.team-col{ flex:1; display:flex; flex-direction:column; gap:6px; }
+.team-setup input{ padding:12px 14px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,0.04);
+  color:var(--text); font-family:'Space Grotesk',sans-serif; font-size:13px; }
+.team-col:nth-child(1) input{ border-color:rgba(79,209,197,0.5); }
+.team-col:nth-child(2) input{ border-color:rgba(255,107,157,0.5); }
+.team-roster{ font-size:11.5px; color:var(--muted); line-height:1.5; padding:0 4px; min-height:16px; }
+.shuffle-btn{ width:100%; margin-top:10px; padding:12px; border-radius:12px; border:1px solid var(--border);
+  background:rgba(255,255,255,0.04); color:var(--text); font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; cursor:pointer; }
+.shuffle-btn:active{ transform:scale(0.98); }
+
+.stepper{ width:100%; display:flex; align-items:center; justify-content:center; gap:22px; padding:10px 0 4px; }
+.stepper button{ width:46px; height:46px; border-radius:50%; border:1px solid var(--border); background:rgba(255,255,255,0.04);
+  color:var(--text); font-size:22px; cursor:pointer; }
+.stepper button:active{ transform:scale(0.92); }
+.stepper .count{ font-family:'Unbounded', sans-serif; font-weight:900; font-size:28px; min-width:56px; text-align:center; }
+.stepper .count small{ display:block; font-family:'Space Grotesk',sans-serif; font-weight:400; font-size:11px; color:var(--muted); margin-top:2px; }
+
+.start-btn{ margin-top:28px; width:100%; padding:18px; border:none; border-radius:16px;
+  background:linear-gradient(90deg, var(--pink), var(--violet)); color:#fff;
+  font-family:'Unbounded', sans-serif; font-weight:700; font-size:16px; letter-spacing:0.5px; cursor:pointer;
+  box-shadow:0 8px 24px rgba(155,107,255,0.35); transition:transform .15s ease; }
+.start-btn:active{ transform:scale(0.98); }
+.start-btn:disabled{ opacity:0.4; box-shadow:none; cursor:not-allowed; }
+
+.responsible{ margin-top:24px; font-size:11.5px; line-height:1.6; color:var(--muted); text-align:center;
+  padding:14px 16px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,0.02); }
+
+.topbar{ width:100%; display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.iconbtn{ width:40px; height:40px; border-radius:50%; border:1px solid var(--border); background:rgba(255,255,255,0.04);
+  color:var(--text); font-size:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+.topbar .meta{ text-align:center; }
+.topbar .meta .theme-name{ font-family:'Unbounded',sans-serif; font-weight:700; font-size:14px; }
+.topbar .meta .count{ font-size:11px; color:var(--muted); margin-top:2px; }
+.glass-wrap{ width:40px; height:50px; flex-shrink:0; }
+#liquid{ transition: y 0.6s cubic-bezier(.2,.8,.2,1), height 0.6s cubic-bezier(.2,.8,.2,1); fill:var(--liquid); }
+
+.team-badge{ align-self:center; margin-bottom:14px; padding:8px 18px; border-radius:999px; font-family:'Unbounded',sans-serif;
+  font-weight:700; font-size:13px; }
+.team-badge.t0{ background:rgba(79,209,197,0.18); color:#4FD1C5; border:1px solid rgba(79,209,197,0.4); }
+.team-badge.t1{ background:rgba(255,107,157,0.18); color:#FF6B9D; border:1px solid rgba(255,107,157,0.4); }
+
+.player-badge{ align-self:center; margin-bottom:14px; padding:8px 20px; border-radius:999px; font-family:'Unbounded',sans-serif;
+  font-weight:700; font-size:14px; background:rgba(155,107,255,0.16); color:var(--text); border:1px solid rgba(155,107,255,0.4); }
+
+.player-names{ width:100%; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.player-names input{ padding:11px 12px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,0.04);
+  color:var(--text); font-family:'Space Grotesk',sans-serif; font-size:13px; }
+
+.card-zone{ width:100%; aspect-ratio: 3/4; max-height:46vh; perspective:1400px; margin-top:2px; }
+.card-inner{ position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .55s cubic-bezier(.2,.8,.2,1); }
+.card-inner.flipped{ transform:rotateY(180deg); }
+.card-face{ position:absolute; inset:0; border-radius:26px; backface-visibility:hidden; display:flex; flex-direction:column; padding:26px; border:1px solid var(--border); }
+.card-back{ background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.08), transparent 60%), linear-gradient(160deg, var(--card), #150F24 70%);
+  align-items:center; justify-content:center; }
+.card-back .glyph{ font-family:'Unbounded', sans-serif; font-weight:900; font-size:15px; letter-spacing:4px; color:rgba(245,241,255,0.5); transform:rotate(-6deg); }
+.card-front{ background:linear-gradient(165deg, #241A3D, #170F28 75%); transform:rotateY(180deg); justify-content:space-between;
+  box-shadow:0 20px 50px rgba(0,0,0,0.4); }
+.card-front.cat-verite{ box-shadow:0 0 0 1px var(--violet) inset, 0 0 40px rgba(155,107,255,0.25); }
+.card-front.cat-action{ box-shadow:0 0 0 1px var(--pink) inset, 0 0 40px rgba(255,61,138,0.25); }
+.card-front.cat-gorgee{ box-shadow:0 0 0 1px var(--amber) inset, 0 0 40px rgba(255,179,0,0.25); }
+.card-front.cat-groupe{ box-shadow:0 0 0 1px var(--lime) inset, 0 0 40px rgba(198,255,61,0.22); }
+.card-front.cat-quiz{ box-shadow:0 0 0 1px var(--emerald) inset, 0 0 40px rgba(52,211,153,0.25); }
+
+.card-tag{ display:inline-flex; align-self:flex-start; align-items:center; gap:6px; font-size:12px; font-weight:700;
+  letter-spacing:1.5px; text-transform:uppercase; padding:6px 12px; border-radius:999px; background:rgba(255,255,255,0.06); }
+.card-tag.cat-verite{ color:var(--violet); }
+.card-tag.cat-action{ color:var(--pink); }
+.card-tag.cat-gorgee{ color:var(--amber); }
+.card-tag.cat-groupe{ color:var(--lime); }
+.card-tag.cat-quiz{ color:var(--emerald); }
+
+.card-text{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:20px; line-height:1.32; flex:1; display:flex; align-items:center; }
+.card-penalty{ font-size:13px; font-weight:700; color:var(--amber); background:rgba(255,179,0,0.12); padding:8px 12px; border-radius:10px; margin-top:8px; }
+.card-answer{ font-size:14px; font-weight:700; color:var(--emerald); background:rgba(52,211,153,0.14); padding:10px 12px; border-radius:10px; margin-top:8px; }
+
+.tally-pill{ align-self:center; margin-bottom:12px; padding:7px 16px; border-radius:999px; font-size:12px; font-weight:600;
+  color:var(--text); background:rgba(255,179,0,0.12); border:1px solid rgba(255,179,0,0.35); }
+
+.confirm-bar{ width:100%; margin-top:18px; display:flex; gap:12px; }
+.confirm-btn{ flex:1; padding:16px; border-radius:16px; border:none; font-family:'Unbounded',sans-serif; font-weight:700; font-size:13.5px; cursor:pointer; }
+.confirm-btn.drank{ background:linear-gradient(90deg, var(--emerald), #4FD1C5); color:#0B1F19; box-shadow:0 8px 20px rgba(52,211,153,0.3); }
+.confirm-btn.pending{ background:rgba(255,255,255,0.06); color:var(--text); border:1px solid var(--border); }
+.confirm-btn:active{ transform:scale(0.97); }
+
+.final-score{ width:100%; max-width:320px; margin-top:-10px; margin-bottom:24px; font-size:14px; color:var(--text);
+  background:rgba(255,255,255,0.04); border:1px solid var(--border); padding:14px 18px; border-radius:14px; text-align:center; line-height:1.7; }
+
+.debt-list{ width:100%; max-width:320px; margin-top:-10px; margin-bottom:24px; }
+.debt-list .debt-title{ font-size:12px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); margin-bottom:10px; text-align:center; }
+.debt-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-radius:12px;
+  background:rgba(255,179,0,0.10); border:1px solid rgba(255,179,0,0.3); margin-bottom:8px; font-size:13.5px; }
+.debt-row .debt-name{ font-weight:700; }
+.debt-row .debt-amount{ color:var(--amber); font-weight:700; }
+.debt-empty{ text-align:center; font-size:13.5px; color:var(--muted); padding:10px 0; }
+.card-index{ align-self:flex-end; font-size:12px; color:var(--muted); margin-top:8px; }
+
+.controls{ width:100%; margin-top:18px; display:flex; gap:12px; }
+.next-btn{ flex:1; padding:18px; border:none; border-radius:16px; background:linear-gradient(90deg, var(--violet), var(--pink));
+  color:#fff; font-family:'Unbounded', sans-serif; font-weight:700; font-size:15px; letter-spacing:0.5px; cursor:pointer;
+  box-shadow:0 8px 24px rgba(255,61,138,0.3); }
+.next-btn:active{ transform:scale(0.98); }
+
+.safety-note{ margin-top:14px; font-size:11px; color:var(--muted); text-align:center; }
+
+.end-screen{ text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding:20px 0; }
+.end-screen h2{ font-family:'Unbounded', sans-serif; font-size:26px; margin-bottom:10px; }
+.end-screen p{ color:var(--muted); font-size:14px; max-width:320px; line-height:1.6; margin-bottom:28px; }
+.end-actions{ display:flex; gap:12px; width:100%; max-width:320px; }
+.end-actions button{ flex:1; padding:15px; border-radius:14px; font-family:'Unbounded',sans-serif; font-weight:700; font-size:13px; cursor:pointer; border:none; }
+.end-actions .primary{ background:linear-gradient(90deg, var(--violet), var(--pink)); color:#fff; }
+.end-actions .secondary{ background:rgba(255,255,255,0.06); color:var(--text); border:1px solid var(--border); }
+
+.modal-overlay{ position:fixed; inset:0; background:rgba(8,5,14,0.75); backdrop-filter:blur(6px); z-index:20;
+  display:flex; align-items:flex-end; justify-content:center; }
+.modal-overlay.hidden{ display:none; }
+.modal{ width:100%; max-width:480px; background:#1B1330; border-radius:24px 24px 0 0; padding:28px 24px 34px; border:1px solid var(--border); border-bottom:none; }
+.modal .memoji{ font-size:32px; }
+.modal h3{ font-family:'Unbounded', sans-serif; font-size:19px; margin:10px 0 8px; }
+.modal p{ color:var(--muted); font-size:13.5px; line-height:1.6; margin-bottom:20px; }
+.modal .modal-actions{ display:flex; gap:10px; }
+.modal .modal-actions button{ flex:1; padding:15px; border-radius:14px; font-family:'Unbounded',sans-serif; font-weight:700; font-size:13px; cursor:pointer; border:none; }
+.modal .modal-actions .primary{ background:linear-gradient(90deg, var(--amber), var(--pink)); color:#170F28; }
+.modal .modal-actions .secondary{ background:rgba(255,255,255,0.06); color:var(--text); border:1px solid var(--border); }
+.modal .demo-note{ margin-top:14px; font-size:11px; color:var(--muted); opacity:0.8; }
+
+@media (max-height: 700px){
+  .card-zone{ max-height:38vh; }
+  .wrap{ padding-top:16px; padding-bottom:20px; }
+  .brand{ margin-bottom:2px; }
+  .brand-glass{ width:36px; height:44px; }
+  .team-badge, .player-badge{ margin-bottom:8px; padding:6px 14px; }
+  .controls{ margin-top:12px; }
+  .safety-note{ margin-top:8px; }
+}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+
+  <div class="wrap">
+
+    <div class="brand">
+      <svg class="brand-glass" width="46" height="58" viewBox="0 0 60 76" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="brandGlassGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#FF3D8A"/>
+            <stop offset="55%" stop-color="#9B6BFF"/>
+            <stop offset="100%" stop-color="#FFB300"/>
+          </linearGradient>
+          <clipPath id="brandGlassClip"><path d="M11,7 L49,7 L40,70 L20,70 Z"/></clipPath>
+        </defs>
+        <rect x="14" y="38" width="32" height="34" clip-path="url(#brandGlassClip)" fill="url(#brandGlassGrad)" opacity="0.9"/>
+        <path d="M11,7 L49,7 L40,70 L20,70 Z" fill="none" stroke="url(#brandGlassGrad)" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+      <h1>CUL SEC</h1>
+      <div class="brand-underline"></div>
+      <p>Un seul téléphone. Une seule règle.</p>
+    </div>
+
+    <!-- ============ SETUP SCREEN ============ -->
+    <div id="setupScreen" class="screen">
+
+      <div class="section-label">Choisis l'ambiance</div>
+      <div class="theme-grid" id="themeGrid"></div>
+
+      <div class="team-setup hidden" id="teamSetup">
+        <div class="team-col">
+          <input type="text" id="teamName0" maxlength="16" value="Équipe 1">
+          <div class="team-roster" id="teamRoster0">—</div>
+        </div>
+        <div class="team-col">
+          <input type="text" id="teamName1" maxlength="16" value="Équipe 2">
+          <div class="team-roster" id="teamRoster1">—</div>
+        </div>
+      </div>
+      <button class="shuffle-btn hidden" id="shuffleTeamsBtn">🎲 Retirer les équipes au hasard</button>
+
+      <div class="section-label">Combien êtes-vous ?</div>
+      <div class="stepper">
+        <button id="playerMinus">−</button>
+        <div class="count"><span id="playerCount">4</span><small>joueurs</small></div>
+        <button id="playerPlus">+</button>
+      </div>
+
+      <div class="section-label">Prénom des joueurs</div>
+      <div class="player-names" id="playerNames"></div>
+
+      <button class="start-btn" id="startBtn" disabled>Lancer la soirée →</button>
+
+      <div class="responsible">
+        Appli pensée pour des adultes consentants. « Je passe » reste toujours valable si besoin. Bois de l'eau entre deux tours et prévois un taxi si nécessaire. 🚕
+      </div>
+    </div>
+
+    <!-- ============ GAME SCREEN ============ -->
+    <div id="gameScreen" class="screen hidden">
+
+      <div class="topbar">
+        <button class="iconbtn" id="backBtn" title="Changer d'ambiance">←</button>
+        <div class="meta">
+          <div class="theme-name" id="themeNameLabel">—</div>
+          <div class="count" id="cardCount">Carte 0</div>
+        </div>
+        <div class="glass-wrap">
+          <svg viewBox="0 0 40 50" width="40" height="50">
+            <path d="M6,4 L34,4 L26,46 L14,46 Z" fill="none" stroke="rgba(245,241,255,0.35)" stroke-width="2"/>
+            <clipPath id="glassClip"><path d="M6,4 L34,4 L26,46 L14,46 Z"/></clipPath>
+            <rect id="liquid" x="0" y="50" width="40" height="0" clip-path="url(#glassClip)"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="team-badge hidden" id="teamBadge"></div>
+      <div class="player-badge hidden" id="playerBadge"></div>
+      <div class="tally-pill hidden" id="tallyPill"></div>
+
+      <div class="card-zone">
+        <div class="card-inner" id="cardInner">
+          <div class="card-face card-back"><div class="glyph">CUL SEC</div></div>
+          <div class="card-face card-front" id="cardFront">
+            <div class="card-tag" id="cardTag">—</div>
+            <div class="card-text" id="cardText">Appuie sur « Carte suivante » pour commencer.</div>
+            <div class="card-answer hidden" id="cardAnswer"></div>
+            <div class="card-penalty hidden" id="cardPenalty"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="next-btn" id="nextBtn">Carte suivante →</button>
+      </div>
+      <div class="confirm-bar hidden" id="confirmBar">
+        <button class="confirm-btn drank" id="confirmDrankBtn">✅ C'est bu</button>
+        <button class="confirm-btn pending" id="confirmPendingBtn">⏳ En attente</button>
+      </div>
+
+      <div class="safety-note">💧 « Je passe » ou un gage neutre remplacent toujours une carte, à tout moment.</div>
+    </div>
+
+    <!-- ============ END SCREEN ============ -->
+    <div id="endScreen" class="screen hidden">
+      <div class="end-screen">
+        <h2>🎉 Soirée terminée</h2>
+        <p id="endMessage">Le verre est plein, la soirée s'arrête là — pas de classement, juste du fun entre vous.</p>
+        <div class="final-score hidden" id="finalScore"></div>
+        <div class="debt-list hidden" id="debtList"></div>
+        <div class="end-actions">
+          <button class="secondary" id="changeThemeBtn">Changer d'ambiance</button>
+          <button class="primary" id="replayBtn">Rejouer</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ LOCK MODAL ============ -->
+<div class="modal-overlay hidden" id="lockModal">
+  <div class="modal">
+    <div class="memoji" id="modalEmoji">🔒</div>
+    <h3 id="modalTitle">Thème premium</h3>
+    <p id="modalDesc">Ce thème fait partie du pack premium.</p>
+    <div class="modal-actions">
+      <button class="secondary" id="modalCancel">Annuler</button>
+      <button class="primary" id="modalUnlock">Débloquer</button>
+    </div>
+    <div class="demo-note">Aperçu de démo — l'achat réel se fera via Google Play une fois l'appli publiée.</div>
+  </div>
+</div>
+
+<!-- ============ WARNING MODAL ============ -->
+<div class="modal-overlay hidden" id="warnModal">
+  <div class="modal">
+    <div class="memoji" id="warnEmoji">🔓</div>
+    <h3 id="warnTitle">Sans filtre</h3>
+    <p id="warnDesc">Contenu réservé à des adultes consentants et complices. « Je passe » reste toujours valable, pour tout le monde.</p>
+    <div class="modal-actions">
+      <button class="secondary" id="warnCancel">Annuler</button>
+      <button class="primary" id="warnContinue">Je comprends, on y va</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= DATA ================= */
+
+const THEMES = {
+  chill:      { label:"Chill",       emoji:"😌", tagline:"Drôle, accessible, personne n'est mal à l'aise.", color:"#FFD166", free:true },
+  equipe:     { label:"Par équipe",  emoji:"🤝", tagline:"Deux équipes s'affrontent, la perdante boit.",     color:"#4FD1C5", free:true, isTeam:true },
+};
+
+const CAT_LABEL = { verite:"Vérité", action:"Action", gorgee:"Gorgée", groupe:"Groupe", quiz:"Quiz" };
+const CAT_EMOJI = { verite:"💬", action:"⚡", gorgee:"🥂", groupe:"🎯", quiz:"🧠" };
+
+// format carte : [categorie, texte, penalite] — penalite vide "" si non applicable (cartes "gorgee" déjà auto-suffisantes)
+const DECKS = {
+  chill: [
+    ["verite","Quel dessin animé tu regardes encore en cachette ?","1 gorgée"],
+    ["verite","Quelle est ta pire coupe de cheveux de tous les temps ?","1 gorgée"],
+    ["verite","Quel est le plat que tu prétends aimer alors que tu le détestes ?","1 gorgée"],
+    ["verite","Quelle chanson tu ne rates jamais quand elle passe à la radio ?","1 gorgée"],
+    ["verite","Quel est ton pire souvenir de rentrée scolaire ?","1 gorgée"],
+    ["verite","Si tu gagnais au loto demain, la première chose stupide que tu achèterais ?","1 gorgée"],
+    ["verite","Quelle appli tu n'assumerais pas montrer à tes parents ?","1 gorgée"],
+    ["verite","Quel est ton pire achat inutile ?","1 gorgée"],
+    ["action","Imite ton animal préféré pendant 15 secondes.","1 gorgée"],
+    ["action","Fais deviner un film en le mimant, sans parler.","1 gorgée"],
+    ["action","Raconte une blague à voix haute.","1 gorgée si personne ne rit"],
+    ["action","Chante le générique d'un dessin animé de ton enfance.","1 gorgée"],
+    ["action","Fais un compliment sincère à la personne à ta gauche.","1 gorgée"],
+    ["action","Improvise une pub pour l'objet le plus proche de toi.","1 gorgée"],
+    ["action","Fais ton meilleur cri de Tarzan.","1 gorgée"],
+    ["action","Raconte tes vacances de rêve en mode vendeur ambulant.","1 gorgée"],
+    ["gorgee","Tout le monde qui a déjà chanté sous la douche boit une gorgée.",""],
+    ["gorgee","La dernière personne à avoir ri boit une gorgée.",""],
+    ["gorgee","Bois une gorgée si tu as déjà loupé un réveil important.",""],
+    ["gorgee","Trinque avec la personne à ta droite, une gorgée chacun.",""],
+    ["gorgee","Le dernier à avoir posté une story boit une gorgée.",""],
+    ["gorgee","Bois une gorgée pour chaque animal de compagnie que tu as eu, max 3.",""],
+    ["gorgee","Bois une gorgée si tu as déjà envoyé un message au mauvais destinataire.",""],
+    ["gorgee","Le plus grand du groupe distribue deux gorgées.",""],
+    ["groupe","🎯 Jamais je n'ai jamais : chacun lève 5 doigts, le lecteur annonce une action.","chaque doigt baissé = 1 gorgée"],
+    ["groupe","🕺 Statue musicale : au signal, tout le monde se fige.","le dernier à bouger boit 2 gorgées"],
+    ["groupe","🎭 Chacun mime un métier, le groupe devine en 20 secondes.","le raté boit 1 gorgée"],
+    ["groupe","🗳️ Most likely to : posez « qui est le plus susceptible de... » et pointez tous en même temps.","les deux extrêmes boivent 1 gorgée"],
+    ["verite","Quelle est la playlist que tu écoutes en toute honte ?","1 gorgée"],
+    ["verite","Quel est ton pire souvenir de covoiturage ?","1 gorgée"],
+    ["verite","Quelle est la chose la plus chère que tu aies perdue ?","1 gorgée"],
+    ["verite","Quel est ton talent le plus inutile ?","1 gorgée"],
+    ["action","Fais deviner un animal en le mimant, sans un bruit.","1 gorgée"],
+    ["action","Raconte ta journée comme si c'était une bande-annonce de film.","1 gorgée"],
+    ["action","Fais 10 secondes de stand-up improvisé sur le sujet de ton choix.","1 gorgée"],
+    ["action","Invente un surnom sympa pour chaque personne du groupe.","1 gorgée"],
+    ["gorgee","Bois une gorgée si tu as déjà fait semblant de comprendre une blague.",""],
+    ["gorgee","Le premier à avoir mangé aujourd'hui distribue une gorgée.",""],
+    ["gorgee","Bois une gorgée pour chaque langue que tu parles, même mal.",""],
+    ["groupe","🎤 Chantez en chœur le refrain d'une chanson connue de tous.","celui qui se trompe le plus boit 1 gorgée"],
+    ["groupe","🧠 Devinette rapide posée par le lecteur, le premier à trouver est exempté du prochain gage.","les autres boivent 1 gorgée"],
+    ["groupe","📸 Chasse aux souvenirs : 60 secondes pour retrouver un objet insolite dans la pièce.","le dernier arrivé boit 1 gorgée"],
+    ["verite","Quel est le mensonge blanc que tu racontes le plus souvent à tes amis ?","1 gorgée"],
+    ["verite","Quelle est la série que tu as bingée en une nuit entière ?","1 gorgée"],
+    ["action","Fais deviner une chanson en la sifflant.","1 gorgée"],
+    ["action","Raconte ta pire expérience de covoiturage improvisée, façon épopée.","1 gorgée"],
+    ["gorgee","Bois une gorgée si tu as déjà oublié l'anniversaire de quelqu'un.",""],
+    ["gorgee","La personne qui a les chaussures les plus originales distribue une gorgée.",""],
+    ["groupe","🎨 Dessinez à tour de rôle un élément d'un dessin commun, sans savoir ce que les autres ont dessiné.","le résultat le plus raté fait boire son auteur, 1 gorgée"],
+    ["groupe","🕵️ Devinez qui a écrit une réponse anonyme à une question posée par le lecteur.","mauvaise réponse : 1 gorgée"],
+    ["verite","Qui dans le groupe survivrait le moins longtemps sur une île déserte ?","1 gorgée"],
+    ["verite","Qui serait le pire colocataire ?","1 gorgée"],
+    ["verite","Quel est ton plus gros défaut ?","1 gorgée"],
+    ["verite","Quelle est la chose la plus bizarre que tu fais quand personne ne te regarde ?","1 gorgée"],
+    ["verite","Qui ici te connaît le mieux ?","1 gorgée"],
+    ["verite","Quelle est ta plus grosse honte au collège ou au lycée ?","1 gorgée"],
+    ["verite","Si tu devais échanger ta vie avec quelqu'un ici pendant 24h, qui choisirais-tu ?","1 gorgée"],
+    ["verite","Quel est ton talent complètement inutile ?","1 gorgée"],
+    ["verite","Qui serait le plus susceptible de devenir célèbre ?","1 gorgée"],
+    ["verite","Quelle est la pire excuse que tu as déjà donnée pour annuler une soirée ?","1 gorgée"],
+    ["groupe","👀 Le regard : au signal, tout le monde regarde quelqu'un du groupe.","celui qui reçoit le plus de regards boit 1 gorgée"],
+    ["groupe","🕵️ Qui est-ce ? : un joueur pense à quelqu'un du groupe, les autres posent des questions oui/non.","si personne ne trouve en 10 questions, tout le monde boit 1 gorgée"],
+    ["groupe","🗳️ Vote express : « Qui est le plus susceptible de... ? » Tout le monde vote en même temps, du doigt.","la personne la plus désignée boit 1 gorgée"],
+    ["quiz","Quelle est la capitale de l'Australie ? (Réponse : Canberra)","1 gorgée"],
+    ["quiz","Qui a peint la Joconde ? (Réponse : Léonard de Vinci)","1 gorgée"],
+    ["quiz","Quel est le plus grand océan du monde ? (Réponse : le Pacifique)","1 gorgée"],
+    ["quiz","Combien de joueurs compte une équipe de football sur le terrain ? (Réponse : 11)","1 gorgée"],
+    ["quiz","Qui a écrit « Les Misérables » ? (Réponse : Victor Hugo)","1 gorgée"],
+    ["quiz","Quelle est la capitale du Canada ? (Réponse : Ottawa)","1 gorgée"],
+    ["quiz","Combien de cordes a une guitare classique ? (Réponse : 6)","1 gorgée"],
+    ["quiz","Quelle est la capitale de l'Italie ? (Réponse : Rome)","1 gorgée"],
+    ["quiz","Quelle est la capitale de l'Espagne ? (Réponse : Madrid)","1 gorgée"],
+    ["quiz","Combien y a-t-il de jours dans une année bissextile ? (Réponse : 366)","1 gorgée"],
+    ["quiz","Quel est le plus grand animal du monde ? (Réponse : la baleine bleue)","1 gorgée"],
+    ["quiz","Quel est le plus grand pays du monde par sa superficie ? (Réponse : la Russie)","1 gorgée"],
+    ["quiz","Combien de joueurs une équipe de basket a-t-elle sur le terrain ? (Réponse : 5)","1 gorgée"],
+    ["quiz","Avec quel fruit fabrique-t-on le cidre ? (Réponse : la pomme)","1 gorgée"],
+    ["quiz","Comment s'appelle le célèbre sorcier à lunettes créé par J.K. Rowling ? (Réponse : Harry Potter)","1 gorgée"],
+    ["quiz","Combien de couleurs compte l'arc-en-ciel ? (Réponse : 7)","1 gorgée"],
+    ["action","Tiens 10 secondes en position de gainage (planche).","1 gorgée"],
+    ["action","Parle uniquement en rimes jusqu'à ton prochain tour.","1 gorgée"],
+    ["action","Imite un joueur du groupe, les autres doivent deviner qui c'est.","1 gorgée"],
+    ["action","Fais le tour de la pièce en marchant comme un robot.","1 gorgée"],
+    ["action","Reconnais les yeux fermés un objet que le groupe te met dans les mains.","1 gorgée"],
+    ["action","Raconte ton film préféré en 15 secondes, sans citer son titre.","1 gorgée"],
+    ["quiz","Quelle est la capitale de l'Espagne ? (Réponse : Madrid)","1 gorgée"],
+    ["quiz","Combien y a-t-il de jours dans une année bissextile ? (Réponse : 366)","1 gorgée"],
+    ["quiz","Quel est le plus grand animal terrestre ? (Réponse : l'éléphant d'Afrique)","1 gorgée"],
+    ["quiz","Quelle couleur obtient-on en mélangeant du bleu et du jaune ? (Réponse : le vert)","1 gorgée"],
+    ["quiz","Combien de côtés a un hexagone ? (Réponse : 6)","1 gorgée"],
+    ["quiz","Dans quel pays est née la cuisine du sushi ? (Réponse : le Japon)","1 gorgée"],
+    ["quiz","Quelle est la capitale de l'Allemagne ? (Réponse : Berlin)","1 gorgée"],
+    ["quiz","Quel instrument de musique a 88 touches ? (Réponse : le piano)","1 gorgée"],
+    ["quiz","Avec quel fruit fabrique-t-on le vin ? (Réponse : le raisin)","1 gorgée"],
+    ["quiz","Dans quel pays se trouve la tour de Pise ? (Réponse : l'Italie)","1 gorgée"],
+    ["quiz","Quel animal a le cou le plus long ? (Réponse : la girafe)","1 gorgée"],
+    ["quiz","Combien de planètes compte le système solaire ? (Réponse : 8)","1 gorgée"],
+    ["action","Fais 10 secondes de danse du robot.","1 gorgée"],
+    ["action","Raconte ta journée en chantant.","1 gorgée"],
+    ["action","Fais le tour de la pièce en marchant comme un canard.","1 gorgée"],
+    ["action","Imite un membre du groupe pendant 15 secondes, les autres doivent deviner qui.","1 gorgée"],
+    ["action","Garde un objet léger en équilibre sur ta tête pendant 10 secondes (pas de verre !).","1 gorgée"],
+    ["action","Fais 5 pompes ou 10 squats.","1 gorgée"],
+    ["action","Récite l'alphabet à l'envers le plus vite possible.","1 gorgée"],
+    ["action","Fais un compliment original à chaque personne du groupe.","1 gorgée"],
+    ["action","Mime une scène de film célèbre, le groupe doit retrouver le film.","1 gorgée"],
+    ["action","Répète 3 fois très vite « Les chaussettes de l'archiduchesse sont-elles sèches ? » sans te tromper.","1 gorgée"],
+    ["action","Prends un selfie avec la pire grimace possible et montre-le au groupe.","1 gorgée"],
+    ["action","Raconte une blague nulle avec un sérieux absolu.","1 gorgée"]
+  ],
+  equipe: [
+    ["quiz","Un membre de l'équipe doit deviner combien d'ex a un membre de l'équipe adverse.","si la réponse est fausse : 2 gorgées pour l'équipe"],
+    ["quiz","Citez 3 films en 10 secondes, chacun votre tour dans l'équipe.","si vous n'y arrivez pas : 2 gorgées pour l'équipe"],
+    ["verite","Racontez le pire souvenir de vacances d'un coéquipier (avec son accord).","2 gorgées pour l'équipe"],
+    ["quiz","Devinez le métier rêvé d'un membre de l'équipe adverse.","si vous devinez faux : 2 gorgées pour l'équipe"],
+    ["groupe","Débattez 15 secondes : qui de l'équipe survivrait le plus longtemps dans un film de zombies ?","si le débat tombe à plat : 2 gorgées pour l'équipe"],
+    ["quiz","Citez le prénom ET le nom de famille d'un coéquipier.","si vous ne trouvez pas : 2 gorgées pour l'équipe"],
+    ["quiz","Un membre de l'équipe imite un autre membre de son équipe, les autres devinent qui.","si personne ne devine : 2 gorgées pour l'équipe"],
+    ["quiz","Citez 3 pays en 10 secondes, chacun votre tour.","si vous n'y arrivez pas : 2 gorgées pour l'équipe"],
+    ["action","Formez une pyramide humaine improvisée pendant 5 secondes (mains posées, rien d'acrobatique).","2 gorgées pour l'équipe"],
+    ["action","Chantez en chœur le refrain choisi par l'équipe adverse.","3 gorgées, toute l'équipe"],
+    ["action","Mimez un métier en équipe, l'équipe adverse a 20 secondes pour deviner.","2 gorgées pour l'équipe"],
+    ["action","Faites une chorégraphie de 15 secondes, synchronisée.","2 gorgées pour l'équipe"],
+    ["action","Racontez l'histoire de l'équipe adverse comme un film à succès.","2 gorgées pour l'équipe"],
+    ["action","Toute l'équipe tient sur un pied pendant 15 secondes.","2 gorgées pour l'équipe (au 1er tombé)"],
+    ["action","Formez un mot avec vos corps, l'équipe adverse doit le deviner.","2 gorgées pour l'équipe"],
+    ["action","Chaque équipe invente un cri de guerre et le performe.","3 gorgées pour l'équipe qui perd le vote du public"],
+    ["groupe","Duel : bras de fer entre un représentant de chaque équipe.","l'équipe perdante boit 2 gorgées"],
+    ["groupe","Duel : chaque équipe mime le même mot sans se concerter, la première à trouver un mot commun gagne.","l'équipe perdante boit 2 gorgées"],
+    ["groupe","Duel de rimes sur un mot donné, l'autre équipe vote la meilleure.","l'équipe perdante boit 2 gorgées"],
+    ["groupe","Quiz éclair de culture générale, la première équipe à répondre juste gagne.","l'équipe perdante boit 2 gorgées"],
+    ["groupe","Chaque équipe choisit un geste secret et le mime en même temps.","gestes différents = 1 gorgée chacun"],
+    ["groupe","Duel de regard entre un joueur de chaque équipe, sans rire.","l'équipe du 1er qui craque boit 2 gorgées"],
+    ["groupe","Citez 5 marques de boissons en équipe en 10 secondes.","3 gorgées, toute l'équipe"],
+    ["groupe","Pierre-feuille-ciseaux en 3 manches entre un représentant de chaque équipe.","l'équipe perdante boit 2 gorgées"],
+    ["groupe","Duel d'équilibre : qui tient le plus longtemps sur un pied ?","l'équipe perdante boit 2 gorgées"],
+    ["groupe","Bataille de pouce entre un représentant de chaque équipe.","l'équipe perdante boit 3 gorgées"],
+    ["groupe","Quiz rapide : capitales du monde, une question par équipe.","mauvaise réponse : 2 gorgées pour l'équipe"],
+    ["groupe","Chaque équipe fait deviner un titre de film en dessinant.","l'équipe la plus lente boit 2 gorgées"],
+    ["quiz","Devinez la boisson préférée d'un membre de l'équipe adverse.","si vous devinez faux : 2 gorgées pour l'équipe"],
+    ["quiz","Citez 3 séries en 10 secondes, chacun votre tour dans l'équipe.","si vous n'y arrivez pas : 2 gorgées pour l'équipe"],
+    ["verite","Racontez le trait de caractère commun à toute l'équipe.","2 gorgées pour l'équipe"],
+    ["quiz","Devinez l'âge exact d'un membre de l'équipe adverse.","si vous devinez faux : 2 gorgées pour l'équipe"],
+    ["action","Inventez un nom d'équipe et un cri de ralliement en 20 secondes.","2 gorgées pour l'équipe"],
+    ["action","Faites la vague en équipe, 3 fois de suite.","2 gorgées pour l'équipe"],
+    ["action","Créez une mini-pub pour votre équipe, façon publicité télé.","2 gorgées pour l'équipe"],
+    ["action","Formez une ligne par ordre de taille, en silence, en 10 secondes.","2 gorgées pour l'équipe"],
+    ["groupe","Duel : qui trouve le plus de mots commençant par une lettre donnée en 15 secondes ?","l'équipe perdante boit 2 gorgées"],
+    ["groupe","Bataille de regards en binôme, sans rire, 3 duels d'affilée.","l'équipe qui perd le plus de duels boit 3 gorgées"],
+    ["groupe","Chaque équipe doit deviner la chanson sifflée par l'autre équipe.","l'équipe qui ne trouve pas boit 2 gorgées"],
+    ["groupe","Chaque équipe forme un mot avec les mains levées en même temps.","gestes différents = 1 gorgée chacun"],
+    ["groupe","Concours de grimaces entre un représentant de chaque équipe, sans rire.","l'équipe du perdant boit 2 gorgées"],
+    ["quiz","Devinez le plat préféré d'un membre de l'équipe adverse.","si vous devinez faux : 2 gorgées pour l'équipe"],
+    ["quiz","Citez 3 chanteurs ou chanteuses en 10 secondes, chacun votre tour.","si vous n'y arrivez pas : 2 gorgées pour l'équipe"],
+    ["verite","Racontez la qualité la plus utile de votre équipe pour survivre à une apocalypse zombie.","2 gorgées pour l'équipe"],
+    ["action","Inventez une mascotte pour votre équipe et présentez-la en 15 secondes.","2 gorgées pour l'équipe"],
+    ["action","Faites deviner un pays en le mimant, sans parler.","2 gorgées pour l'équipe"],
+    ["groupe","Duel de vitesse : qui empile le plus d'objets en 15 secondes ?","l'équipe perdante boit 2 gorgées"],
+    ["groupe","Quiz rapide : drapeaux du monde, une question par équipe.","mauvaise réponse : 2 gorgées pour l'équipe"],
+    ["groupe","Chaque équipe doit deviner un objet décrit sans le nommer par l'autre équipe.","l'équipe qui ne trouve pas boit 2 gorgées"],
+    ["groupe","Concours de la meilleure improvisation d'un slogan publicitaire, vote du public.","l'équipe perdante boit 3 gorgées"],
+    ["groupe","🤐 Ni oui ni non : chaque équipe choisit un joueur, il doit tenir 30 secondes sans dire ni oui ni non.","s'il craque, 2 gorgées pour l'équipe"],
+    ["action","Mime express : 20 secondes pour faire deviner un mot à ton équipe.","2 gorgées pour l'équipe si personne ne trouve"],
+    ["action","Mot interdit : fais deviner un mot à ton équipe sans utiliser 3 mots imposés par l'équipe adverse.","2 gorgées pour l'équipe"],
+    ["groupe","🔤 Alphabet : sur une catégorie donnée, chacun doit trouver un mot avec la lettre imposée, sans hésiter.","le premier bloqué fait boire son équipe, 2 gorgées"],
+    ["groupe","📢 Téléphone cassé : une phrase est chuchotée de joueur en joueur jusqu'au bout de l'équipe.","si le message arrive déformé, l'équipe boit 2 gorgées"],
+    ["groupe","Duel de rapidité : citez 3 marques de voiture en 5 secondes, une équipe contre l'autre.","l'équipe la plus lente boit 2 gorgées"],
+    ["groupe","🎵 Blind test éclair : le premier qui reconnaît la chanson fait gagner son équipe.","l'équipe qui ne trouve pas boit 2 gorgées"],
+    ["verite","Qui connaît le mieux son équipe ? Chacun répond en secret à une question, puis comparez.","si vos réponses diffèrent : 1 gorgée par écart pour l'équipe"],
+    ["verite","Quel membre de l'équipe serait le meilleur candidat à une émission de survie ?","2 gorgées pour l'équipe"],
+    ["verite","Qui de votre équipe arriverait le premier à se faire arrêter dans un film ?","2 gorgées pour l'équipe"],
+    ["verite","Qui dépense le plus d'argent dans votre équipe ?","2 gorgées pour l'équipe"],
+    ["verite","Qui ment le mieux dans votre équipe ?","2 gorgées pour l'équipe"],
+    ["verite","Qui serait le meilleur président dans votre équipe ?","2 gorgées pour l'équipe"],
+    ["verite","Qui de votre équipe survivrait le moins longtemps dans une apocalypse zombie ?","2 gorgées pour l'équipe"],
+    ["quiz","En quelle année a eu lieu la chute du mur de Berlin ? (Réponse : 1989)","2 gorgées pour l'équipe"],
+    ["quiz","Quelle planète est surnommée la « planète rouge » ? (Réponse : Mars)","2 gorgées pour l'équipe"],
+    ["quiz","Quelle est la monnaie utilisée au Japon ? (Réponse : le yen)","2 gorgées pour l'équipe"],
+    ["quiz","Quel animal est le plus rapide du monde sur terre ? (Réponse : le guépard)","2 gorgées pour l'équipe"],
+    ["quiz","Quel est le symbole chimique de l'or ? (Réponse : Au)","2 gorgées pour l'équipe"],
+    ["quiz","Quelle est la langue la plus parlée au monde en nombre de locuteurs natifs ? (Réponse : le mandarin)","2 gorgées pour l'équipe"],
+    ["quiz","Quel est le plus grand désert chaud du monde ? (Réponse : le Sahara)","2 gorgées pour l'équipe"],
+    ["quiz","Quel océan sépare l'Europe de l'Amérique ? (Réponse : l'Atlantique)","2 gorgées pour l'équipe"],
+    ["quiz","Quelle est la capitale de l'Allemagne ? (Réponse : Berlin)","2 gorgées pour l'équipe"],
+    ["quiz","Quel est le plus grand pays d'Afrique par sa superficie ? (Réponse : l'Algérie)","2 gorgées pour l'équipe"],
+    ["quiz","Qui a écrit « Roméo et Juliette » ? (Réponse : William Shakespeare)","2 gorgées pour l'équipe"],
+    ["quiz","Quel est l'os le plus long du corps humain ? (Réponse : le fémur)","2 gorgées pour l'équipe"],
+    ["quiz","Combien de planètes compte le système solaire ? (Réponse : 8)","2 gorgées pour l'équipe"],
+    ["quiz","Quelle est la capitale du Portugal ? (Réponse : Lisbonne)","2 gorgées pour l'équipe"],
+    ["quiz","Quel gaz les plantes absorbent-elles pour la photosynthèse ? (Réponse : le dioxyde de carbone)","2 gorgées pour l'équipe"],
+    ["quiz","Quel pays a remporté la Coupe du monde de football en 2014 ? (Réponse : l'Allemagne)","2 gorgées pour l'équipe"],
+    ["action","Faites une chaîne humaine en vous tenant la main et traversez la pièce sans vous lâcher.","2 gorgées pour l'équipe"],
+    ["action","Mimez une scène de film célèbre, l'autre équipe doit deviner le titre.","2 gorgées pour l'équipe"],
+    ["action","Chantez un refrain en ne prononçant que « la », l'autre équipe doit deviner la chanson.","2 gorgées pour l'équipe"],
+    ["action","Faites chacun 5 squats en rythme, parfaitement synchronisés.","2 gorgées pour l'équipe"],
+    ["groupe","🏗️ Construisez la plus haute tour possible avec les objets autour de vous en 30 secondes.","l'équipe perdante boit 2 gorgées"],
+    ["groupe","🏃 Course : le premier de chaque équipe qui rapporte un objet rouge gagne la manche.","l'équipe perdante boit 2 gorgées"],
+    ["quiz","Quel est le plus petit os du corps humain ? (Réponse : l'étrier, dans l'oreille)","2 gorgées pour l'équipe"],
+    ["quiz","Quelle est la capitale de la Turquie ? (Réponse : Ankara)","2 gorgées pour l'équipe"],
+    ["quiz","Quel pays a remporté la Coupe du monde de football en 2010 ? (Réponse : l'Espagne)","2 gorgées pour l'équipe"],
+    ["quiz","Combien de lettres compte l'alphabet français ? (Réponse : 26)","2 gorgées pour l'équipe"],
+    ["quiz","Qui a peint « Guernica » ? (Réponse : Pablo Picasso)","2 gorgées pour l'équipe"],
+    ["quiz","Quel métal est liquide à température ambiante ? (Réponse : le mercure)","2 gorgées pour l'équipe"],
+    ["quiz","Quel est le plus long fleuve de France ? (Réponse : la Loire)","2 gorgées pour l'équipe"],
+    ["quiz","Dans quelle ville se trouve la Sagrada Família ? (Réponse : Barcelone)","2 gorgées pour l'équipe"],
+    ["quiz","Quel est le pays le plus peuplé d'Afrique ? (Réponse : le Nigeria)","2 gorgées pour l'équipe"],
+    ["quiz","Combien de minutes dure un match de football, hors prolongations ? (Réponse : 90)","2 gorgées pour l'équipe"],
+    ["quiz","Quel gaz les plantes absorbent-elles pour la photosynthèse ? (Réponse : le dioxyde de carbone)","2 gorgées pour l'équipe"],
+    ["quiz","Quel est le monument le plus haut de Paris ? (Réponse : la tour Eiffel)","2 gorgées pour l'équipe"],
+    ["action","Inventez une mini-saynète de 20 secondes sur un thème donné par l'équipe adverse.","si vous séchez : 2 gorgées pour l'équipe"],
+    ["action","Formez la lettre de votre choix avec vos corps, l'équipe adverse doit deviner laquelle.","si personne ne devine : 2 gorgées pour l'équipe"],
+    ["groupe","Course de relais : chaque équipe fait passer un objet de main en main le plus vite possible.","l'équipe la plus lente boit 2 gorgées"],
+    ["groupe","Concours de cri de victoire : chaque équipe invente et performe un cri, le public vote.","l'équipe perdante boit 2 gorgées"],
+    ["groupe","Duel de mime : un joueur par équipe mime le même film, qui le fait deviner le plus vite ?","l'équipe la plus lente boit 2 gorgées"],
+    ["groupe","Construisez la plus haute tour possible avec ce qui vous passe sous la main en 30 secondes.","l'équipe avec la plus petite tour boit 2 gorgées"],
+    ["action","Chantez un refrain en canon, chaque joueur démarre 2 secondes après le précédent.","si le canon se casse : 2 gorgées pour l'équipe"],
+    ["groupe","Duel de chuchotements : une phrase passe d'oreille en oreille dans chaque équipe, laquelle la restitue le mieux ?","l'équipe perdante boit 2 gorgées"],
+    ["action","Faites deviner une célébrité à l'équipe adverse en 3 indices maximum.","si personne ne devine : 2 gorgées pour l'équipe"],
+    ["groupe","Concours de grimaces synchronisées : toute l'équipe fait la même grimace en même temps.","l'équipe la moins synchrone boit 2 gorgées"],
+    ["groupe","Duel de rapidité : citez le plus de fruits possible en 15 secondes, chacun votre tour.","l'équipe qui en cite le moins boit 2 gorgées"],
+    ["action","Dansez une chorégraphie improvisée de 15 secondes sur la musique choisie par l'équipe adverse.","si vous vous arrêtez : 3 gorgées, toute l'équipe"]
+  ],
+};
+
+/* ================= STATE ================= */
+
+let unlocked = new Set(["chill"]); // simulateur d'achat local — à remplacer par Google Play Billing une fois publié
+let state = { themeKey:null, total:20, drawn:0, deck:[], teamIndex:0, teamNames:["Équipe 1","Équipe 2"] };
+let pendingThemeKey = null;
+let playerCount = 4;
+let playerNameValues = ["Joueur 1","Joueur 2","Joueur 3","Joueur 4"];
+let playerQueue = [];
+let teamRosters = [[],[]];
+let tally = { drankSips:0, pendingSips:0, drankShots:0, pendingShots:0 };
+let currentCardDrink = null; // { sips, shots } détecté sur la carte affichée, ou null
+let currentTurnName = null; // nom du joueur ou de l'équipe désigné sur la carte affichée
+let playerDebt = {}; // { "Prénom": { sips, shots } } — uniquement ce qui a été mis en attente
+
+/* ================= SETUP RENDER ================= */
+
+const themeGrid = document.getElementById('themeGrid');
+const teamSetup = document.getElementById('teamSetup');
+
+function renderThemeGrid(){
+  themeGrid.innerHTML = '';
+  Object.entries(THEMES).forEach(([key, t]) => {
+    const isLocked = !t.free && !unlocked.has(key);
+    const el = document.createElement('div');
+    el.className = 'theme-tile' + (isLocked ? ' locked' : '');
+    el.style.setProperty('--tc', t.color);
+    el.innerHTML = `
+      <div>
+        <div class="emoji">${t.emoji}</div>
+        <div class="tname">${t.label}</div>
+        <div class="ttag">${t.tagline}</div>
+      </div>
+      ${isLocked ? '<div class="lock">🔒</div>' : ''}
+    `;
+    el.addEventListener('click', () => selectTheme(key, isLocked));
+    themeGrid.appendChild(el);
+  });
+}
+
+function selectTheme(key, isLocked){
+  if(isLocked){ openLockModal(key); return; }
+  state.themeKey = key;
+  renderThemeGrid();
+  [...themeGrid.children].forEach((el, i) => {
+    if(Object.keys(THEMES)[i] === key) el.classList.add('selected');
+  });
+  const isTeam = !!THEMES[key].isTeam;
+  teamSetup.classList.toggle('hidden', !isTeam);
+  document.getElementById('shuffleTeamsBtn').classList.toggle('hidden', !isTeam);
+  if(isTeam) assignTeamsRandomly();
+  updateStartBtn();
+}
+
+function assignTeamsRandomly(){
+  const shuffled = shuffle(playerNameValues.slice());
+  teamRosters = [[],[]];
+  shuffled.forEach((name, i) => teamRosters[i % 2].push(name));
+  document.getElementById('teamRoster0').textContent = teamRosters[0].join(', ') || '—';
+  document.getElementById('teamRoster1').textContent = teamRosters[1].join(', ') || '—';
+}
+document.getElementById('shuffleTeamsBtn').addEventListener('click', assignTeamsRandomly);
+
+const lockModal = document.getElementById('lockModal');
+function openLockModal(key){
+  pendingThemeKey = key;
+  const t = THEMES[key];
+  document.getElementById('modalEmoji').textContent = t.emoji;
+  document.getElementById('modalTitle').textContent = t.label + ' — thème premium';
+  document.getElementById('modalDesc').textContent = t.tagline + ' Débloque ce thème pour l\'ajouter à tes soirées.';
+  lockModal.classList.remove('hidden');
+}
+document.getElementById('modalCancel').addEventListener('click', () => lockModal.classList.add('hidden'));
+document.getElementById('modalUnlock').addEventListener('click', () => {
+  unlocked.add(pendingThemeKey);
+  lockModal.classList.add('hidden');
+  renderThemeGrid();
+  selectTheme(pendingThemeKey, false);
+});
+
+document.getElementById('teamName0').addEventListener('input', e => state.teamNames[0] = e.target.value || 'Équipe 1');
+document.getElementById('teamName1').addEventListener('input', e => state.teamNames[1] = e.target.value || 'Équipe 2');
+
+/* ---- player stepper + prénoms ---- */
+const playerCountEl = document.getElementById('playerCount');
+const playerNamesEl = document.getElementById('playerNames');
+
+function renderPlayerNameInputs(){
+  // conserve les prénoms déjà saisis, complète ou tronque selon le nombre de joueurs
+  const next = [];
+  for(let i = 0; i < playerCount; i++){
+    next.push(playerNameValues[i] || ('Joueur ' + (i+1)));
+  }
+  playerNameValues = next;
+
+  playerNamesEl.innerHTML = '';
+  playerNameValues.forEach((name, i) => {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.maxLength = 16;
+    input.value = name;
+    input.addEventListener('input', e => {
+      playerNameValues[i] = e.target.value || ('Joueur ' + (i+1));
+      if(state.themeKey === 'equipe') assignTeamsRandomly();
+    });
+    playerNamesEl.appendChild(input);
+  });
+  if(state.themeKey === 'equipe') assignTeamsRandomly();
+}
+
+document.getElementById('playerMinus').addEventListener('click', () => {
+  playerCount = Math.max(2, playerCount - 1);
+  playerCountEl.textContent = playerCount;
+  renderPlayerNameInputs();
+});
+document.getElementById('playerPlus').addEventListener('click', () => {
+  playerCount = Math.min(15, playerCount + 1);
+  playerCountEl.textContent = playerCount;
+  renderPlayerNameInputs();
+});
+renderPlayerNameInputs();
+
+function updateStartBtn(){
+  document.getElementById('startBtn').disabled = !state.themeKey;
+}
+
+renderThemeGrid();
+
+/* ================= WARNING MODAL ================= */
+const warnModal = document.getElementById('warnModal');
+document.getElementById('warnCancel').addEventListener('click', () => warnModal.classList.add('hidden'));
+document.getElementById('warnContinue').addEventListener('click', () => {
+  warnModal.classList.add('hidden');
+  launchGame();
+});
+
+/* ================= START ================= */
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  const t = THEMES[state.themeKey];
+  if(t.warning){
+    document.getElementById('warnEmoji').textContent = t.emoji;
+    document.getElementById('warnTitle').textContent = t.warnTitle;
+    document.getElementById('warnDesc').textContent = t.warnDesc;
+    warnModal.classList.remove('hidden');
+    return;
+  }
+  launchGame();
+});
+
+function shuffle(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Durée calculée à partir du nombre de joueurs, avec une petite part d'aléatoire à chaque partie.
+function computeSessionLength(players){
+  const base = 30 + players * 1.6;
+  const jitter = Math.floor(Math.random() * 7) - 2; // -2 à +4
+  return Math.max(28, Math.min(60, Math.round(base + jitter)));
+}
+
+function launchGame(){
+  state.total = computeSessionLength(playerCount);
+  state.drawn = 0;
+  state.teamIndex = 0;
+  state.deck = shuffle(DECKS[state.themeKey].slice());
+  tally = { drankSips:0, pendingSips:0, drankShots:0, pendingShots:0 };
+  currentCardDrink = null;
+  currentTurnName = null;
+  playerDebt = {};
+
+  const t = THEMES[state.themeKey];
+  document.getElementById('themeNameLabel').textContent = t.emoji + ' ' + t.label;
+  document.documentElement.style.setProperty('--liquid', t.color);
+
+  document.getElementById('teamBadge').classList.toggle('hidden', !t.isTeam);
+  document.getElementById('playerBadge').classList.toggle('hidden', !!t.isTeam);
+  playerQueue = shuffle(playerNameValues.slice());
+  updateTallyPill();
+
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('endScreen').classList.add('hidden');
+  document.getElementById('gameScreen').classList.remove('hidden');
+  document.getElementById('cardInner').classList.remove('flipped');
+  document.getElementById('cardCount').textContent = 'Carte 0';
+  setGlass(0);
+}
+
+/* ================= GAME ================= */
+
+const cardInner = document.getElementById('cardInner');
+const cardFront = document.getElementById('cardFront');
+const cardTag = document.getElementById('cardTag');
+const cardText = document.getElementById('cardText');
+const cardAnswer = document.getElementById('cardAnswer');
+const cardPenalty = document.getElementById('cardPenalty');
+const cardCount = document.getElementById('cardCount');
+const liquid = document.getElementById('liquid');
+const teamBadge = document.getElementById('teamBadge');
+const nextBtn = document.getElementById('nextBtn');
+
+let awaitingAnswerReveal = false;
+let pendingAnswer = '';
+
+function setGlass(progress){
+  const h = 42 * progress;
+  liquid.setAttribute('height', h);
+  liquid.setAttribute('y', 46 - h);
+}
+
+// Adapte le libellé de la pénalité au type de carte. Une question Vérité classique n'a pas
+// de "bonne" ou "mauvaise" réponse (c'est une question personnelle) : la pénalité s'applique
+// en cas de refus de répondre, pas en cas de "mauvaise réponse". Une Action se rate en la
+// refusant. Si la carte a déjà sa propre condition intégrée (contient "si", "refus", ou ":"),
+// c'est un cas particulier (quiz, devinette...) et on l'affiche telle quelle.
+function formatPenalty(cat, penalty){
+  const hasOwnCondition = penalty.includes(':') || /\bsi\b/i.test(penalty) || /^refus/i.test(penalty);
+  if(hasOwnCondition){
+    return '🚫 ' + penalty.charAt(0).toUpperCase() + penalty.slice(1);
+  }
+  if(cat === 'verite') return '🚫 Si tu refuses de répondre : ' + penalty;
+  if(cat === 'action') return '🚫 Si refus : ' + penalty;
+  if(cat === 'quiz') return '🚫 Si mauvaise réponse : ' + penalty;
+  return '🚫 Sinon : ' + penalty;
+}
+
+function drawCard(){
+  if(state.drawn >= state.total){ showEndScreen(); return; }
+  if(state.deck.length === 0){ state.deck = shuffle(DECKS[state.themeKey].slice()); }
+
+  const [cat, rawText, penalty] = state.deck.pop();
+  state.drawn++;
+
+  // Pour les cartes quiz, la réponse « (Réponse : ...) » est retirée de la question
+  // et gardée de côté pour n'être révélée qu'au clic suivant.
+  let text = rawText;
+  cardAnswer.classList.add('hidden');
+  awaitingAnswerReveal = false;
+  pendingAnswer = '';
+  if(cat === 'quiz'){
+    const match = rawText.match(/\s*\(Réponse\s*:\s*([^)]+)\)\s*$/i);
+    if(match){
+      text = rawText.slice(0, match.index).trim();
+      pendingAnswer = match[1].trim();
+    }
+  }
+
+  // Détecte s'il y a des gorgées/culs secs à valider sur cette carte, à partir de la
+  // pénalité affichée (ou du texte lui-même pour les cartes "gorgee", auto-suffisantes).
+  const drinkSource = penalty || (cat === 'gorgee' ? rawText : '');
+  currentCardDrink = parseDrink(drinkSource);
+
+  const t = THEMES[state.themeKey];
+  const playerBadgeEl = document.getElementById('playerBadge');
+  if(t.isTeam){
+    const teamName = state.teamNames[state.teamIndex];
+    teamBadge.textContent = (state.teamIndex === 0 ? '🔵 ' : '🔴 ') + teamName;
+    teamBadge.className = 'team-badge t' + state.teamIndex;
+    currentTurnName = teamName;
+    state.teamIndex = 1 - state.teamIndex;
+  } else if(cat === 'verite' || cat === 'action' || cat === 'quiz'){
+    if(playerQueue.length === 0){ playerQueue = shuffle(playerNameValues.slice()); }
+    const playerName = playerQueue.pop();
+    playerBadgeEl.textContent = '🎯 Au tour de ' + playerName;
+    playerBadgeEl.classList.remove('hidden');
+    currentTurnName = playerName;
+  } else {
+    playerBadgeEl.classList.add('hidden');
+    currentTurnName = null;
+  }
+
+  cardFront.className = 'card-face card-front cat-' + cat;
+  cardTag.className = 'card-tag cat-' + cat;
+  cardTag.textContent = `${CAT_EMOJI[cat]} ${CAT_LABEL[cat]}`;
+  cardText.textContent = text;
+
+  if(penalty){
+    cardPenalty.textContent = formatPenalty(cat, penalty);
+    cardPenalty.classList.remove('hidden');
+  } else {
+    cardPenalty.classList.add('hidden');
+  }
+
+  cardCount.textContent = 'Carte ' + state.drawn;
+  setGlass(state.drawn / state.total);
+
+  cardInner.classList.remove('flipped');
+  void cardInner.offsetWidth;
+  requestAnimationFrame(() => cardInner.classList.add('flipped'));
+
+  if(pendingAnswer){ awaitingAnswerReveal = true; }
+  updateControls();
+}
+
+function revealAnswer(){
+  cardAnswer.textContent = '✅ Réponse : ' + pendingAnswer;
+  cardAnswer.classList.remove('hidden');
+  awaitingAnswerReveal = false;
+  updateControls();
+}
+
+// Bascule entre le bouton simple "Carte suivante" et la paire de boutons de confirmation
+// des gorgées, selon ce qu'il reste à faire sur la carte affichée.
+function updateControls(){
+  const confirmBar = document.getElementById('confirmBar');
+  if(awaitingAnswerReveal){
+    nextBtn.classList.remove('hidden');
+    confirmBar.classList.add('hidden');
+    nextBtn.textContent = 'Voir la réponse →';
+  } else if(currentCardDrink){
+    nextBtn.classList.add('hidden');
+    confirmBar.classList.remove('hidden');
+  } else {
+    nextBtn.classList.remove('hidden');
+    confirmBar.classList.add('hidden');
+    nextBtn.textContent = (state.drawn >= state.total) ? 'Terminer la soirée 🎉' : 'Carte suivante →';
+  }
+}
+
+// Repère un nombre de gorgées et/ou un cul sec dans un texte de pénalité ou de carte.
+// Renvoie null si rien à valider (cartes sans conséquence buvable, ex. cartes spéciales).
+function parseDrink(str){
+  if(!str) return null;
+  const isShot = /cul sec/i.test(str);
+  const sipMatch = str.match(/(\d+)\s*gorg/i);
+  let sips = 0;
+  if(sipMatch){ sips = parseInt(sipMatch[1], 10); }
+  else if(/gorg/i.test(str)){ sips = 1; }
+  if(sips === 0 && !isShot) return null;
+  return { sips, shots: isShot ? 1 : 0 };
+}
+
+function logDrink(drankNow){
+  if(!currentCardDrink) return;
+  if(drankNow){
+    tally.drankSips += currentCardDrink.sips;
+    tally.drankShots += currentCardDrink.shots;
+  } else {
+    tally.pendingSips += currentCardDrink.sips;
+    tally.pendingShots += currentCardDrink.shots;
+    if(currentTurnName){
+      if(!playerDebt[currentTurnName]) playerDebt[currentTurnName] = { sips:0, shots:0 };
+      playerDebt[currentTurnName].sips += currentCardDrink.sips;
+      playerDebt[currentTurnName].shots += currentCardDrink.shots;
+    }
+  }
+  currentCardDrink = null;
+  updateTallyPill();
+}
+
+function formatDrinkAmount(sips, shots){
+  const parts = [];
+  if(sips > 0) parts.push(sips + ' gorgée' + (sips > 1 ? 's' : ''));
+  if(shots > 0) parts.push(shots + ' cul sec' + (shots > 1 ? 's' : ''));
+  return parts.join(' + ');
+}
+
+function updateTallyPill(){
+  const pill = document.getElementById('tallyPill');
+  const hasPending = tally.pendingSips > 0 || tally.pendingShots > 0;
+  const hasDrank = tally.drankSips > 0 || tally.drankShots > 0;
+  if(!hasPending && !hasDrank){
+    pill.classList.add('hidden');
+    return;
+  }
+  pill.textContent = hasPending
+    ? '⏳ En attente : ' + formatDrinkAmount(tally.pendingSips, tally.pendingShots)
+    : '✅ Tout est à jour';
+  pill.classList.remove('hidden');
+}
+
+nextBtn.addEventListener('click', () => {
+  if(awaitingAnswerReveal){
+    revealAnswer();
+  } else {
+    drawCard();
+  }
+});
+document.getElementById('confirmDrankBtn').addEventListener('click', () => { logDrink(true); drawCard(); });
+document.getElementById('confirmPendingBtn').addEventListener('click', () => { logDrink(false); drawCard(); });
+
+document.getElementById('backBtn').addEventListener('click', () => {
+  document.getElementById('gameScreen').classList.add('hidden');
+  document.getElementById('setupScreen').classList.remove('hidden');
+});
+
+/* ================= END SCREEN ================= */
+
+function showEndScreen(){
+  document.getElementById('gameScreen').classList.add('hidden');
+
+  const finalScoreEl = document.getElementById('finalScore');
+  const totalSips = tally.drankSips + tally.pendingSips;
+  const totalShots = tally.drankShots + tally.pendingShots;
+  if(totalSips === 0 && totalShots === 0){
+    finalScoreEl.classList.add('hidden');
+  } else {
+    let html = '🍹 <strong>Score final : ' + formatDrinkAmount(totalSips, totalShots) + '</strong>';
+    if(tally.pendingSips > 0 || tally.pendingShots > 0){
+      html += '<br>⏳ Dont encore en attente : ' + formatDrinkAmount(tally.pendingSips, tally.pendingShots);
+    }
+    finalScoreEl.innerHTML = html;
+    finalScoreEl.classList.remove('hidden');
+  }
+
+  // Classement de ceux qui ont mis des gorgées en attente pendant la partie, du plus au moins endetté.
+  const debtListEl = document.getElementById('debtList');
+  const debtEntries = Object.entries(playerDebt)
+    .map(([name, d]) => ({ name, sips: d.sips, shots: d.shots, weight: d.sips + d.shots * 3 }))
+    .filter(e => e.weight > 0)
+    .sort((a, b) => b.weight - a.weight);
+
+  if(debtEntries.length === 0){
+    debtListEl.innerHTML = '<div class="debt-title">À rattraper</div><div class="debt-empty">Personne n\'a mis de gorgées en attente. Tout le monde est à jour 🎉</div>';
+  } else {
+    const rows = debtEntries.map(e =>
+      `<div class="debt-row"><span class="debt-name">${e.name}</span><span class="debt-amount">${formatDrinkAmount(e.sips, e.shots)}</span></div>`
+    ).join('');
+    debtListEl.innerHTML = '<div class="debt-title">À rattraper</div>' + rows;
+  }
+  debtListEl.classList.remove('hidden');
+
+  document.getElementById('endScreen').classList.remove('hidden');
+}
+document.getElementById('replayBtn').addEventListener('click', launchGame);
+document.getElementById('changeThemeBtn').addEventListener('click', () => {
+  document.getElementById('endScreen').classList.add('hidden');
+  document.getElementById('setupScreen').classList.remove('hidden');
+});
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
+</script>
+</body>
+</html>
